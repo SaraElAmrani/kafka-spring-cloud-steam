@@ -21,10 +21,42 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 
-@RestController
+/**
+ * Ce contrôleur expose 2 endpoints HTTP :
+ *
+ * 1. GET /publish?name=P1&topic=T2
+ *    → Permet de publier manuellement un événement vers un topic Kafka
+ *    → Utile pour tester l'application
+ *
+ * 2. GET /analytics
+ *    → Envoie les statistiques en temps réel au client web
+ *    → Utilise Server-Sent Events (SSE)
+ *    → Le navigateur reçoit des mises à jour automatiques chaque seconde
+ *
+ * RESPONSABILITÉS :
+ * - Interface entre l'utilisateur (navigateur) et Kafka
+ * - Publication manuelle d'événements
+ * - Lecture du State Store de Kafka Streams
+ * - Streaming des résultats vers le client web
+ */
+
+@RestController  // Indique à Spring que c'est un contrôleur REST (retourne du JSON/données)
 public class PageEventController {
 
-    @Autowired
+    // INJECTION DE DÉPENDANCES
+    /**
+     * StreamBridge : Permet d'envoyer des messages vers Kafka
+     *
+     * UTILITÉ :
+     * - Envoyer manuellement des événements vers n'importe quel topic
+     * - Alternative à l'utilisation d'un Supplier
+     * - Utile pour des publications ponctuelles (pas automatiques)
+     *
+     * EXEMPLE D'UTILISATION :
+     * streamBridge.send("nom-du-topic", monObjet);
+     */
+
+    @Autowired // Spring injecte automatiquement cette dépendance
     private StreamBridge streamBridge;
     @Autowired
     private InteractiveQueryService interactiveQueryService;
